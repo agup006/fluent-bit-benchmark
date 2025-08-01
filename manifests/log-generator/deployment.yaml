@@ -17,8 +17,11 @@ spec:
     spec:
       containers:
       - name: log-generator
-        image: fluent-bit-benchmark/log-generator:latest
-        imagePullPolicy: Never  # For local development
+        image: golang:1.21-alpine
+        imagePullPolicy: Always
+        workingDir: /app
+        command: ["/bin/sh"]
+        args: ["-c", "echo '{}' > /tmp/dummy.json && while true; do sleep 30; done"]
         args:
         - "-url=http://fluent-bit:9880"
         - "-rate=1000"
