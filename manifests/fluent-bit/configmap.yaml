@@ -23,7 +23,10 @@ data:
         Port              9880
         Buffer_Max_Size   1MB
         Buffer_Chunk_Size 64KB
-
+    
+    [INPUT]
+        Name              fluentbit_metrics
+        
     [FILTER]
         Name   parser
         Match  *

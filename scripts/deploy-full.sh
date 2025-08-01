@@ -180,7 +180,21 @@ deploy_prometheus() {
     # Create ServiceAccount and RBAC
     kubectl create serviceaccount prometheus -n $NAMESPACE
     
-    kubectl create clusterrole prometheus --verb=get,list,watch --resource=nodes,services,endpoints,pods --dry-run=client -o yaml | kubectl apply -f -
+    cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "services", "endpoints", "pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["nodes/proxy", "nodes/metrics"]
+  verbs: ["get"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+EOF
     
     kubectl create clusterrolebinding prometheus-$NAMESPACE \
         --clusterrole=prometheus \
@@ -192,13 +206,40 @@ deploy_prometheus() {
   scrape_interval: 15s
 
 scrape_configs:
-- job_name: "fluent-bit"
+- job_name: "fluent-bit-http-server"
+  static_configs:
+  - targets: ["fluent-bit-server:2020"]
+  scrape_interval: 5s
+  metrics_path: "/api/v1/metrics/prometheus"
+
+- job_name: "fluent-bit-metrics-port"
   static_configs:
   - targets: ["fluent-bit-metrics:2021"]
+  scrape_interval: 5s
+  metrics_path: "/metrics"
 
-- job_name: "benchmark-server"  
+- job_name: "benchmark-server"
   static_configs:
   - targets: ["benchmark-server:8080"]
+  metrics_path: "/metrics"
+
+- job_name: "kubernetes-cadvisor"
+  scheme: https
+  tls_config:
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+  kubernetes_sd_configs:
+  - role: node
+  relabel_configs:
+  - action: labelmap
+    regex: __meta_kubernetes_node_label_(.+)
+  - target_label: __address__
+    replacement: kubernetes.default.svc:443
+  - source_labels: [__meta_kubernetes_node_name]
+    regex: (.+)
+    target_label: __metrics_path__
+    replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
 
 - job_name: "kubernetes-pods"
   kubernetes_sd_configs:
