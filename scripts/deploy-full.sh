@@ -163,11 +163,11 @@ deploy_fluent_bit() {
     success "Fluent Bit deployed"
 }
 
-# Deploy benchmark server (simple HTTP receiver)
+# Deploy benchmark server (HTTP request receiver)
 deploy_benchmark_server() {
     log "Deploying benchmark server..."
     
-    kubectl create deployment benchmark-server -n $NAMESPACE --image=nginx:alpine
+    kubectl create deployment benchmark-server -n $NAMESPACE --image=kennethreitz/httpbin
     kubectl expose deployment benchmark-server -n $NAMESPACE --port=8080 --target-port=80
     
     success "Benchmark server deployed"
