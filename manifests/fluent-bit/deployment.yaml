@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluent-bit
+  namespace: fluent-bit-benchmark
+  labels:
+    app: fluent-bit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fluent-bit
+  template:
+    metadata:
+      labels:
+        app: fluent-bit
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2021"
+        prometheus.io/path: "/api/v1/metrics/prometheus"
+    spec:
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:3.0
+        ports:
+        - containerPort: 9880
+          name: http-input
+        - containerPort: 2020
+          name: http-server
+        - containerPort: 2021
+          name: metrics
+        volumeMounts:
+        - name: config
+          mountPath: /fluent-bit/etc/
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 2020
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 2020
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: fluent-bit-config

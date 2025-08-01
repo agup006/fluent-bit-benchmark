@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perses-config
+  namespace: fluent-bit-benchmark
+data:
+  config.yaml: |
+    database:
+      file:
+        folder: "/var/lib/perses"
+    
+    security:
+      authentication:
+        providers:
+          native:
+            user:
+              admin:
+                password: "admin"
+      authorization:
+        guest_permissions:
+        - "*"
+    
+    frontend:
+      information:
+        build_time: "2024-01-01T00:00:00Z"
+        version: "v0.45.0"
+    
+    schemas:
+      panels_path: "/etc/perses/schemas/panels"
+      queries_path: "/etc/perses/schemas/queries"
+      datasources_path: "/etc/perses/schemas/datasources"
+      variables_path: "/etc/perses/schemas/variables"

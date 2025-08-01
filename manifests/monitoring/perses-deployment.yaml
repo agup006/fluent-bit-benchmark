@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perses
+  namespace: fluent-bit-benchmark
+  labels:
+    app: perses
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: perses
+  template:
+    metadata:
+      labels:
+        app: perses
+    spec:
+      containers:
+      - name: perses
+        image: persesdev/perses:v0.45.0
+        ports:
+        - containerPort: 8080
+          name: web
+        env:
+        - name: PERSES_CONFIG
+          value: "/etc/perses/config.yaml"
+        volumeMounts:
+        - name: perses-config
+          mountPath: /etc/perses/
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: perses-config
+        configMap:
+          name: perses-config

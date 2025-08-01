@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-generator
+  namespace: fluent-bit-benchmark
+  labels:
+    app: log-generator
+spec:
+  replicas: 0  # Controlled by benchmark orchestrator
+  selector:
+    matchLabels:
+      app: log-generator
+  template:
+    metadata:
+      labels:
+        app: log-generator
+    spec:
+      containers:
+      - name: log-generator
+        image: fluent-bit-benchmark/log-generator:latest
+        imagePullPolicy: Never  # For local development
+        args:
+        - "-url=http://fluent-bit:9880"
+        - "-rate=1000"
+        - "-duration=60s"
+        - "-workers=10"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        env:
+        - name: BENCHMARK_RATE
+          value: "1000"
+        - name: BENCHMARK_DURATION
+          value: "60s"

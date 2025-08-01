@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: benchmark-server
+  namespace: fluent-bit-benchmark
+  labels:
+    app: benchmark-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: benchmark-server
+  template:
+    metadata:
+      labels:
+        app: benchmark-server
+    spec:
+      containers:
+      - name: benchmark-server
+        image: chronosphereio/calyptia-https-benchmark-server:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 8081
+          name: metrics
+        env:
+        - name: PORT
+          value: "8080"
+        - name: METRICS_PORT
+          value: "8081"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
