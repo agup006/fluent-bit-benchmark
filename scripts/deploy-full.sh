@@ -91,7 +91,7 @@ deploy_fluent_bit() {
     Match *
     Host  benchmark-server
     Port  8080
-    URI   /logs
+    URI   /post
     Format json
     Retry_Limit 3
     Workers 4
