@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: fluent-bit
-        image: fluent/fluent-bit:3.0
+        image: fluent/fluent-bit:latest
         ports:
         - containerPort: 9880
           name: http-input
@@ -36,9 +36,6 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "200m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
         livenessProbe:
           httpGet:
             path: /

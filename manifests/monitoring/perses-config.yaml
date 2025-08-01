@@ -10,20 +10,7 @@ data:
         folder: "/var/lib/perses"
     
     security:
-      authentication:
-        providers:
-          native:
-            user:
-              admin:
-                password: "admin"
-      authorization:
-        guest_permissions:
-        - "*"
-    
-    frontend:
-      information:
-        build_time: "2024-01-01T00:00:00Z"
-        version: "v0.45.0"
+      readonly: false
     
     schemas:
       panels_path: "/etc/perses/schemas/panels"
