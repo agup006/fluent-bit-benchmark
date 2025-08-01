@@ -180,11 +180,11 @@ deploy_prometheus() {
     # Create ServiceAccount and RBAC
     kubectl create serviceaccount prometheus -n $NAMESPACE
     
-    kubectl create clusterrole prometheus --verb=get,list,watch --resource=nodes,services,endpoints,pods
+    kubectl create clusterrole prometheus --verb=get,list,watch --resource=nodes,services,endpoints,pods --dry-run=client -o yaml | kubectl apply -f -
     
-    kubectl create clusterrolebinding prometheus \
+    kubectl create clusterrolebinding prometheus-$NAMESPACE \
         --clusterrole=prometheus \
-        --serviceaccount=$NAMESPACE:prometheus
+        --serviceaccount=$NAMESPACE:prometheus --dry-run=client -o yaml | kubectl apply -f -
     
     # Create ConfigMap
     kubectl create configmap prometheus-config -n $NAMESPACE \
